@@ -1,11 +1,43 @@
 const mongoose = require('mongoose');
 
-const gameSchema = new mongoose.Schema({
-    player1: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    player2: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    rounds: [{ type: String }], // Array to track each round's outcome
-    winner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    status: { type: String, default: 'pending' }, // pending, ongoing, completed
+// Define the Game schema
+const GameSchema = new mongoose.Schema({
+    playerOne: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    playerTwo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+    },
+    playerOneScore: {
+        type: Number,
+        default: 0,
+    },
+    playerTwoScore: {
+        type: Number,
+        default: 0,
+    },
+    moves: [
+        {
+            round: Number,
+            playerOneMove: String,
+            playerTwoMove: String,
+            winner: String, // 'playerOne', 'playerTwo', or 'draw'
+        },
+    ],
+    winner: {
+        type: String,
+        enum: ['playerOne', 'playerTwo', 'draw', null],
+        default: null,
+    },
+}, {
+    timestamps: true, // Automatically creates createdAt and updatedAt fields
 });
 
-module.exports = mongoose.model('Game', gameSchema);
+// Add an index on the 'createdAt' field for optimized sorting/filtering by date
+GameSchema.index({ createdAt: -1 });
+
+module.exports = mongoose.model('Game', GameSchema);

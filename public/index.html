@@ -1,25 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rock-Paper-Scissors Game</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
+    <div class="container">
+        <h1>Welcome to Rock Paper Scissors</h1>
+        <p>Play with friends and enjoy the game!</p>
+        <div class="auth-links">
+            <a href="login.html">Login</a> |
+            <a href="register.html">Register</a>
+        </div>
+    </div>
+
+    <!-- Game Interface Section -->
     <div id="game-interface">
         <h1>Rock-Paper-Scissors</h1>
-        <div id="game-status"></div>
+
+        <!-- Game Status Section -->
+        <div id="gameStatus">
+            <h3>Game Status:</h3>
+            <p id="roundStatus">Waiting for opponent...</p> <!-- Displays round status (waiting or playing) -->
+            <p>Your Move: <span id="yourMove">None</span></p> <!-- Displays the player's move -->
+            <p>Opponent’s Move: <span id="opponentMove">None</span></p> <!-- Displays opponent's move -->
+        </div>
+
+        <!-- Scoreboard Section -->
+        <div id="scoreBoard">
+            <h3>Score:</h3>
+            <p>You: <span id="yourScore">0</span></p> <!-- Player's score -->
+            <p>Opponent: <span id="opponentScore">0</span></p> <!-- Opponent's score -->
+        </div>
+
+        <!-- Move Selection Section -->
         <div id="choices">
             <button id="rock">Rock</button>
             <button id="paper">Paper</button>
             <button id="scissors">Scissors</button>
         </div>
+
+        <!-- Result Section (Outcome of the current round) -->
         <div id="result"></div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-<script src="js/app.js"></script> <!-- Make sure this matches your file path -->
-<script src="js/authClient.js"></script>
 
+    <!-- Match History Section -->
+    <div id="matchHistory">
+        <h3>Match History</h3>
+        <ul id="historyList"></ul>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <div id="leaderboard">
+        <h3>Top Players</h3>
+        <ul id="leaderboardList"></ul>
+    </div>
+
+    <!-- Player and Opponent Move Display -->
+    <div id="playerMoveDisplay"></div>
+    <div id="opponentMoveDisplay"></div>
+
+    <!-- Include the Socket.IO client -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Your custom JavaScript files -->
+    <script src="js/app.js"></script> <!-- Your game logic file -->
+    <script src="js/authClient.js"></script> <!-- Your auth-related functions -->
 </body>
+
 </html>

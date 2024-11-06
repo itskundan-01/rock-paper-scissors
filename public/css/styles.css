@@ -42,3 +42,25 @@ form button {
     color: white;
     cursor: pointer;
 }
+#leaderboard, #matchHistory, #gameStatus {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 10px;
+    background-color: #f4f4f4;
+}
+
+#playerMoveDisplay, #opponentMoveDisplay {
+    font-weight: bold;
+    padding: 10px;
+}
+/* Example of mobile adjustments */
+@media (max-width: 600px) {
+    #leaderboard, #matchHistory, #gameStatus {
+        font-size: 0.9em;
+        padding: 10px;
+    }
+    #playerMoveDisplay, #opponentMoveDisplay {
+        font-size: 1em;
+    }
+}
