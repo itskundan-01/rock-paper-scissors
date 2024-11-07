@@ -1,25 +1,27 @@
+// server.js
+
 const express = require('express');
+const http = require('http');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const http = require('http');
-const socketIO = require('socket.io');
+const socketIo = require('socket.io'); // Import socket.io
+const gameRoutes = require('./routes/game');
+const userRoutes = require('./routes/user'); // Correct path
 
+// Initialize Express app
 const app = express();
+const server = http.createServer(app); // Create the HTTP server to support socket.io
+const io = socketIo(server, { cors: { origin: '*' } }); // Initialize socket.io with CORS support
 
-// Create an HTTP server and attach socket.io
-const server = http.createServer(app);
-const io = socketIO(server);
+const PORT = process.env.PORT || 5000;
 
-const compression = require('compression');
-app.use(compression());
+// Middleware
+app.use(cors()); // Allow cross-origin requests
+app.use(express.json()); // Parse incoming JSON payloads
+app.use(express.static(path.join(__dirname, '../public'))); // Serve static files from public directory
 
-// Set up middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
-
-// MongoDB connection
+// Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/rock-paper-scissors', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -27,28 +29,38 @@ mongoose.connect('mongodb://localhost:27017/rock-paper-scissors', {
 .then(() => console.log('Connected to MongoDB'))
 .catch((err) => console.error('MongoDB connection error:', err));
 
-// Socket.io connection
-io.on('connection', (socket) => {
-    console.log('New client connected');
+// Import routes
+const authRoutes = require('./routes/auth');
+const paymentRoutes = require('./routes/payment');
 
-    // Listen for disconnections
-    socket.on('disconnect', () => {
-        console.log('Client disconnected');
+// Use routes
+app.use('/api/auth', authRoutes); // User authentication routes
+app.use('/api/game', gameRoutes); // Game-related routes
+app.use('/api/payment', paymentRoutes); // Payment processing routes
+// app.use('/api/user', userRoutes); // Optional: User profile or user-specific routes
+
+// Handle Socket.io connections
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+
+    // Event to handle moves made by players
+    socket.on('moveMade', ({ gameId, userId, move }) => {
+        // Broadcast the move to the opponent in the same game room
+        socket.to(gameId).emit('moveUpdate', { userId, move });
     });
 
-    // Listen for game moves and emit the move to the other player
-    socket.on('moveMade', (data) => {
-        const { gameId, playerMove } = data;
-        // Emit move update to the specific game room
-        io.to(gameId).emit('moveUpdate', playerMove);
+    // Event to handle game-over notification
+    socket.on('gameOver', ({ gameId, winner }) => {
+        io.to(gameId).emit('gameOver', { winner });
+    });
+
+    // Handle when the user disconnects
+    socket.on('disconnect', () => {
+        console.log('User disconnected:', socket.id);
     });
 });
 
-// Express route for authentication and other routes
-app.use('/api/auth', require('./routes/auth'));
-
-// Set up the port for the server
-const PORT = process.env.PORT || 5000;
-
-// Start the server
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Start the server with Socket.io support
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

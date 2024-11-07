@@ -4,7 +4,7 @@ document.getElementById('register-form')?.addEventListener('submit', async (e) =
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    const response = await fetch('/api/auth/register', {
+    const response = await fetch('http://localhost:5000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -28,7 +28,7 @@ document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     console.log('Email:', email); // Log email
     console.log('Password:', password); // Log password
 
-    const response = await fetch('/api/auth/login', {
+    const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

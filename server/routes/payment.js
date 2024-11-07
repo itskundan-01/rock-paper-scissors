@@ -17,3 +17,4 @@ router.post('/process', async (req, res) => {
         res.status(500).json({ message: 'Error processing payment', error });
     }
 });
+module.exports = router;

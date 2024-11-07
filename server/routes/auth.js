@@ -1,53 +1,62 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs'); // Ensure bcrypt is required here
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 
-// Function to generate JWT token
-function generateToken(user) {
-    return jwt.sign({ userId: user._id }, 'your_secret_key', { expiresIn: '1h' });
-}
-
 // Registration Route
 router.post('/register', async (req, res) => {
     const { email, password } = req.body;
-    console.log('Received registration request:', { email, password }); // Log incoming data
 
     try {
+        // Check if the user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            console.log('User already exists:', email); // Log if user exists
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const user = new User({ email, password });
+        // Hash the password before saving
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log(`Hashed Password: ${hashedPassword}`);
+
+        // Create a new user with the hashed password
+        const user = new User({ email, password: hashedPassword });
         await user.save();
-        
-        console.log('User registered successfully:', email); // Log successful registration
+
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-        console.error('Error during registration:', error); // Log specific error details
-        res.status(500).json({ error: 'An error occurred during registration', details: error.message });
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Registration error' });
     }
 });
 
 // Login Route
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
+
     try {
         const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ message: 'User not found' });
+        if (!user) {
+            console.log('User not found');
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+        console.log(`Entered Password: ${password}`);
+        console.log(`Stored Hashed Password: ${user.password}`);
 
-        // Generate JWT token using the helper function
-        const token = generateToken(user);
-        res.status(200).json({ message: 'Login successful', token });
+        const isMatch = await user.comparePassword(password);
+        console.log(`Password Match: ${isMatch}`);
+        if (!isMatch) {
+            console.log('Invalid credentials');
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        const token = jwt.sign({ userId: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
+
+        res.status(200).json({ token, message: 'Login successful' });
     } catch (error) {
-        console.error('Error during login:', error); // Log specific error details
-        res.status(500).json({ error: 'Login error', details: error.message });
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Login error' });
     }
 });
 
